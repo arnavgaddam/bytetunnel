@@ -5,29 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tunnel File Sharing</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
       display: flex;
-      justify-content: center;
-      align-items: center;
       height: 100vh;
-      flex-direction: column;
       margin: 0;
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: #fff;
+      justify-content: center;
+      align-items: center;
     }
 
     .container {
-      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: row;
+      width: 80%;
+      max-width: 1200px;
+    }
+
+    .upload-box, .file-list-box {
+      background: rgba(255, 255, 255, 0.15);
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       text-align: center;
+      margin: 20px;
+      flex: 1;
+      backdrop-filter: blur(10px);
+    }
+
+    .upload-box {
+      flex: 1;
+    }
+
+    .file-list-box {
+      flex: 2;
     }
 
     h1 {
-      font-size: 2em;
+      font-size: 2.5em;
       margin-bottom: 20px;
+      font-weight: 500;
     }
 
     .code-display {
@@ -46,31 +66,31 @@
       border-radius: 5px;
     }
 
-    .placeholder {
-      font-size: 1.1em;
-      margin-top: 20px;
-      padding: 10px;
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 5px;
-    }
-
     #fileList {
       list-style-type: none;
       padding: 0;
     }
 
     #fileList li {
-      background: #f0f0f0;
+      background: rgba(255, 255, 255, 0.25);
       margin: 5px 0;
       padding: 10px;
       border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s ease;
+      color: #000;
     }
 
     #fileList li:nth-child(odd) {
-      background: #e0e0e0;
+      background: rgba(255, 255, 255, 0.2);
     }
 
-    /* Custom styles for the file input button */
+    #fileList li:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
     .file-input-container {
       position: relative;
       display: inline-block;
@@ -81,15 +101,27 @@
       display: inline-block;
       background: #4CAF50;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 25px;
       font-size: 1em;
       cursor: pointer;
       border-radius: 5px;
-      transition: background 0.3s ease;
+      transition: background 0.3s ease, transform 0.3s ease;
     }
 
     .file-input-label:hover {
       background: #45a049;
+      transform: scale(1.05);
+    }
+
+    .file-input-label:active {
+      transform: scale(1);
+    }
+
+    .download-icon {
+      margin-left: 10px;
+      width: 20px;
+      height: 20px; 
+      filter: invert(1);
     }
 
     #fileInput {
@@ -101,20 +133,23 @@
       height: 100%;
       cursor: pointer;
     }
-
   </style>
+
 </head>
 <body>
   <div class="container">
-    <h1>Tunnel File Sharing</h1>
-    <div id="code" class="code-display"></div>
-    <div class="file-input-container">
-      <label for="fileInput" class="file-input-label">Choose Files</label>
-      <input type="file" id="fileInput" multiple>
+    <div class="upload-box">
+      <h1>Upload Files</h1>
+      <div class="code-display" id="code"></div>
+      <div class="file-input-container">
+        <label for="fileInput" class="file-input-label">Choose Files</label>
+        <input type="file" id="fileInput" multiple>
+      </div>
     </div>
-    <ul id="fileList">
-      <li id="placeholder">No files uploaded</li>
-    </ul>
+    <div class="file-list-box">
+      <h1>Files</h1>
+      <ul id="fileList"></ul>
+    </div>
   </div>
 
   <script src="src/tunnel.js"></script>
