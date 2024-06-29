@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tunnel File Sharing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .code-display {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+
+    .status-bar {
+      font-size: 1.1em;
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+
+    .placeholder {
+      font-size: 1.1em;
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+
+    #fileList {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #fileList li {
+      background: #f0f0f0;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #fileList li:nth-child(odd) {
+      background: #e0e0e0;
+    }
+
+    /* Custom styles for the file input button */
+    .file-input-container {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .file-input-label {
+      display: inline-block;
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+
+    .file-input-label:hover {
+      background: #45a049;
+    }
+
+    #fileInput {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tunnel File Sharing</h1>
+    <div id="code" class="code-display"></div>
+    <div class="file-input-container">
+      <label for="fileInput" class="file-input-label">Choose Files</label>
+      <input type="file" id="fileInput" multiple>
+    </div>
+    <ul id="fileList">
+      <li id="placeholder">No files uploaded</li>
+    </ul>
+  </div>
+
+  <script src="src/tunnel.js"></script>
+</body>
+</html>
