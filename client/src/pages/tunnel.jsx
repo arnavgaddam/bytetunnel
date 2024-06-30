@@ -3,8 +3,11 @@ import '../styles/tunnel.css';
 import { useParams } from 'react-router-dom';
 
 export default function Tunnel() {
+    // Keep track of files and current client ID
     const [files, setFiles] = useState([]);
     const [clientId, setClientId] = useState(generateCode());
+
+    // Declare Refs for WebRTC logic
     const host = useRef(false);
     const connection = useRef(null);
     const dataChannel = useRef(null);
@@ -21,49 +24,64 @@ export default function Tunnel() {
         websocket.current.onopen = initSocket;
     }, []);
 
+    // Triggers when new files are added
+    useEffect(() => {
+        // console.log(files);
+    }, [files]);
+
     // Initializes websocket by registering with server
     function initSocket() {
+
         // Initialize message listener 
         websocket.current.onmessage = handleSignal;
         
-        // Register with server
+        // Register with server: triggers rest of code flow once a response is received
         const register_request = JSON.stringify({
             type: "register",
             clientId: clientId,
             tunnelId: tunnelCode
         })
         
+        // Send message to server
         websocket.current.send(register_request);
   }
 
     // Function to handle signaling server messages
     const handleSignal = (event) => {
+        // Parse string coming in over socket as JSON object
         const data = JSON.parse(event.data);
         console.log(data);
+
+        // Branch depending on type of message
         switch (data.type) {
+            
+            // Client successfully registered
             case "register_success":
                 console.log("Registered successfully.");
                 break;
-
+            
+            // Contains number of clients currently connected to server
             case "broadcast":
                 // Update host role
                 updateHost(data.count);
                 console.log("Peers connected: ", data.count == 2);
-
                 // Setup connection when peer joins tunnel
                 if (data.count > 1) {
                     setupConnection();
                 }
                 break;
 
+            // Received an offer from another client
             case "offer":
                 handleOffer(data.offer, data.clientId);
                 break;
-
+            
+            // Received an answer to offer from other client
             case "answer":
                 handleAnswer(data.answer);
                 break;
-
+            
+            // Received ice candidate from other client
             case "ice":
                 receiveIceCandidate(data.candidate);
                 break;
@@ -72,6 +90,19 @@ export default function Tunnel() {
                 break;
         }
     };
+
+    // sends ice candidate to peer 
+    function sendIceCandidate(event) {
+        // console.log("New ice candidate found:", event.candidate);
+        // Send this ice candidate over the signaling server to the other peer
+        const ice_message = JSON.stringify({
+            type: "ice",
+            clientId: clientId,
+            tunnelId: tunnelCode,
+            candidate: event.candidate
+        });
+        websocket.current.send(ice_message);
+        }
 
     // Function to update host based on number of connected clients
     function updateHost(clientCount) {
@@ -83,8 +114,9 @@ export default function Tunnel() {
 
     // Sets up connection after both peers are connected. 
     function setupConnection() {
+        // Initialize webrtc connection
         connection.current = new RTCPeerConnection(config);
-        // Define callback for when ice candidates are discovered
+        // Define callback for when ice candidates are discovered and connection state changes
         connection.current.onconnectionstatechange = handleConnectionState;
         connection.current.onicecandidate = sendIceCandidate;
     
@@ -102,8 +134,11 @@ export default function Tunnel() {
 
     // Makes an offer to peer
     async function makeOffer() {
+        // Create offer object
         const offer_obj = await connection.current.createOffer();
+        // Update local description
         connection.current.setLocalDescription(offer_obj);
+        // Create and send offer message
         const offerMessage = JSON.stringify({
             type: "offer",
             clientId: clientId,
@@ -115,9 +150,12 @@ export default function Tunnel() {
 
     // handles incoming offer from signaling server
     async function handleOffer(offer, sender_id) {
+        // Set remote description of connection
         await connection.current.setRemoteDescription(offer);
+        // Create answer and set as local description
         const answer_obj = await connection.current.createAnswer();
         connection.current.setLocalDescription(answer_obj);
+        // Create and send answer message to peer
         const answer_message = JSON.stringify({
             type: "answer",
             senderId: sender_id,
@@ -130,7 +168,7 @@ export default function Tunnel() {
 
     // Callback function called when receiving ice candidates from peer over signaling server
     function receiveIceCandidate(ice_candidate) {
-        // console.log("Adding external ice candidate:", ice_candidate);
+        // Add ice candidate to connection if not null
         if (ice_candidate == null) {
             return;
         }
@@ -139,22 +177,25 @@ export default function Tunnel() {
 
     // Handles incoming answer 
     async function handleAnswer(answer) {
+        // Set remote description as answer
         await connection.current.setRemoteDescription(answer);
     }
 
     // Callback when connection state changes
-    function handleConnectionState(event) {
+    function handleConnectionState() {
         console.log("connection state:", connection.current.connectionState);
     }
 
     // Function called when data channel received
     function receiveDataChannel(event) {
+        // Initialize data channel
         dataChannel.current = event.channel;
         initDataChannel();
     }
 
     // Initializes data channel with callbacks
     function initDataChannel() {
+        // Bind callbacks for onopen and onmessage
         dataChannel.current.onopen = dataChannelOpen;
         dataChannel.current.onmessage = handleChannelMessage;
     }
@@ -196,18 +237,7 @@ export default function Tunnel() {
         // }
       }
     
-    // sends ice candidate to peer 
-    function sendIceCandidate(event) {
-        // console.log("New ice candidate found:", event.candidate);
-        // Send this ice candidate over the signaling server to the other peer
-        const ice_message = JSON.stringify({
-          type: "ice",
-          clientId: clientId,
-          tunnelId: tunnelCode,
-          candidate: event.candidate
-        });
-        websocket.current.send(ice_message);
-      }
+
 
     // Function to generate a 6-character pronounceabletunnelCode 
     function generateCode() {
@@ -223,11 +253,12 @@ export default function Tunnel() {
 
     // Handle file input change event
     const handleFileInputChange = (event) => {
+        console.log("Uploaded file:", event.target.files[0]);
         const newFiles = Array.from(event.target.files);
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-
-        console.log('Selected files:', fileArray);
     };
+
+
 
     return (
         <div className="container">
@@ -245,7 +276,7 @@ export default function Tunnel() {
             {files.map((file, index) => (
                 <li key={index}>
                 {file.name}
-                <img src="download-icon.svg" alt="Download" className="download-icon" />
+                {/* <img src="download-icon.svg" alt="Download" className="download-icon" /> */}
                 </li>
             ))}
             </ul>

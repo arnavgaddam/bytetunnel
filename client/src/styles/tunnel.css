@@ -100,7 +100,7 @@ h1 {
 
 .file-input-label:hover {
   background: #45a049;
-  transform: scale(1.05);
+  transform: scale(1.2);
 }
 
 .file-input-label:active {
