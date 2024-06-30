@@ -1,125 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebRTC File Transfer</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
-    body {
-      font-family: 'Roboto', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff;
-      flex-direction: column;
-    }
-
-    .content {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 80%;
-      max-width: 800px;
-      margin-top: 20px;
-    }
-
-    .panel {
-      flex: 1;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      background-color: rgba(255, 255, 255, 0.1);
-      margin: 0 10px;
-      text-align: center;
-    }
-
-    .left-panel {
-      margin-right: 5px;
-    }
-
-    .right-panel {
-      margin-left: 5px;
-    }
-
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-      font-weight: 500;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 12px 25px;
-      font-size: 1.2em;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background-color: #4CAF50;
-      color: white;
-      transition: background-color 0.3s, transform 0.3s;
-    }
-
-    button:hover {
-      background-color: #45a049;
-      transform: scale(1.05);
-    }
-
-    button:active {
-      transform: scale(1);
-    }
-
-    .join-code-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 10px;
-    }
-
-    .join-code-input {
-      width: 40px;
-      height: 40px;
-      font-size: 2em;
-      color: white;
-      background-color: #9024d824;
-      text-align: center;
-      margin: 0 3px;
-      border: 0px dashed #ccc;
-      border-radius: 5px;
-      outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-
-    .join-code-input:focus {
-      border-color: #9024d8;
-      box-shadow: 0 0 8px rgba(48, 17, 224, 0.4);
-    }
-
-  </style>
-</head>
-<body>
-  <h1>WebRTC File Transfer Service</h1>
-  <div class="content">
-    <div class="panel left-panel">
-      <button id="createTunnel">Create Tunnel</button>
-    </div>
-    <div class="panel right-panel">
-      <div class="join-code-container">
-        <input type="text" id="joinCode1" class="join-code-input" maxlength="1">
-        <input type="text" id="joinCode2" class="join-code-input" maxlength="1">
-        <input type="text" id="joinCode3" class="join-code-input" maxlength="1">
-        <input type="text" id="joinCode4" class="join-code-input" maxlength="1">
-        <input type="text" id="joinCode5" class="join-code-input" maxlength="1">
-        <input type="text" id="joinCode6" class="join-code-input" maxlength="1">
-      </div>
-      <button id="joinButton">Join</button>
-    </div>
-  </div>
-
-  <script type="module" src="/src/main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bytetunnel</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
+
