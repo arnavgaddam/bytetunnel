@@ -56,12 +56,14 @@ h1 {
 #fileList {
   list-style-type: none;
   padding: 0;
-  margin: 0;
+  margin: 20px;
   max-height: 300px; /* Adjust as needed */
   overflow-y: auto;
+  cursor: pointer;
 }
 
 #fileList li {
+  position: relative;
   background: rgba(255, 255, 255, 0.25);
   margin: 5px 0;
   padding: 10px;
@@ -70,7 +72,9 @@ h1 {
   justify-content: space-between;
   align-items: center;
   transition: background 0.3s ease;
-  color: #000;
+  color: #fff; /* White text */
+  font-family: 'Roboto', sans-serif; /* Roboto font */
+  position: relative; /* Ensure relative positioning */
 }
 
 #fileList li:nth-child(odd) {
@@ -79,6 +83,18 @@ h1 {
 
 #fileList li:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.download-icon {
+  width: 20px;
+  height: 20px;
+  filter: invert(1);
+  cursor: pointer; /* Ensure cursor changes on hover */
+  margin-left: 10px; /* Add spacing between text and icon */
+  position: absolute; /* Position absolutely inside the li */
+  right: 10px; /* Anchor to the right side with 10px margin */
+  top: 50%; /* Align vertically */
+  transform: translateY(-50%); /* Adjust vertical alignment */
 }
 
 .file-input-container {
@@ -107,11 +123,22 @@ h1 {
   transform: scale(1);
 }
 
-.download-icon {
-  margin-left: 10px;
-  width: 20px;
-  height: 20px;
-  filter: invert(1);
+.code-display {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: inline-block; /* Display as inline block to fit content */
+  max-width: 100%; /* Limit maximum width */
+  overflow-wrap: break-word; /* Wrap long lines */
+  word-wrap: break-word; /* Compatibility with older browsers */
+  word-break: break-word; /* Break words if needed */
+  white-space: pre-wrap; /* Preserve line breaks */
+}
+
+.code-display:hover {
+  background: rgba(0, 0, 0, 0.15); /* Lighten background on hover */
 }
 
 #fileInput {

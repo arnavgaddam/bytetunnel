@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/tunnel.css';
 import { useParams } from 'react-router-dom';
+import downloadImage from '../assets/download_icon.svg';
 
 export default function Tunnel() {
     // Keep track of files and current client ID
@@ -12,6 +13,7 @@ export default function Tunnel() {
     const connection = useRef(null);
     const dataChannel = useRef(null);
     const websocket = useRef(new WebSocket("ws://localhost:8765"));
+    const CHUNK_SIZE = useRef(16000);
 
     const config = {
         iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
@@ -206,37 +208,92 @@ export default function Tunnel() {
         // Flush files
     }
 
-    // Called when message received over data channel
+    const receivedBuffersRef = useRef([]);
+    const receivedMetadataRef = useRef(null);
+    const receivedSizeRef = useRef(0);
+
+    // Function to handle received messages over data channel
     function handleChannelMessage(event) {
         console.log("Received message:", event.data);
-        // if (typeof event.data === 'string') {
-        //   // Contains metadata
-        //   const message = JSON.parse(event.data);
-        //   console.log("metadata received", message);
-        //   if (message.type === 'file-metadata') {
-        //     receivedMetadata = message;
-        //     receivedBuffers = [];
-        //     receivedSize = 0;
-        //   } else if (message.type === 'file-complete') {
-        //     saveFile(receivedBuffers, receivedMetadata);
-        //     receivedMetadata = null;
-        //     receivedBuffers = [];
-        //     receivedSize = 0;
-        //   }
-        // } else {
-        //   // Handle chunks of array buffers
-      
-        //   receivedBuffers.push(event.data);
-        //   receivedSize += event.data.byteLength;
-        //   if (receivedSize >= receivedMetadata.fileSize) {
-        //     saveFile(receivedBuffers, receivedMetadata);
-        //     receivedMetadata = null;
-        //     receivedBuffers = [];
-        //     receivedSize = 0;
-        //   }
-        // }
-      }
+        if (typeof event.data === 'string') {
+        // Contains metadata
+        const message = JSON.parse(event.data);
+        console.log("metadata received", message);
+        if (message.type === 'file-metadata') {
+            receivedMetadataRef.current = message;
+            receivedBuffersRef.current = [];
+            receivedSizeRef.current = 0;
+        } else if (message.type === 'file-complete') {
+            saveFile(receivedBuffersRef.current, receivedMetadataRef.current);
+            receivedMetadataRef.current = null;
+            receivedBuffersRef.current = [];
+            receivedSizeRef.current = 0;
+        }
+        } else {
+        // Handle chunks of array buffers
+        receivedBuffersRef.current.push(event.data);
+        receivedSizeRef.current += event.data.byteLength;
+        if (receivedSizeRef.current >= receivedMetadataRef.current.fileSize) {
+            saveFile(receivedBuffersRef.current, receivedMetadataRef.current);
+            receivedMetadataRef.current = null;
+            receivedBuffersRef.current = [];
+            receivedSizeRef.current = 0;
+        }
+        }
+    }
+
+    // Function to save file
+    function saveFile(buffers, metadata) {
+
+        // Ensure that file is received with metadata
+        if (metadata == null) {
+        return;
+        }
+
+        const blob = new Blob(buffers, { type: metadata.fileType });
+        const url = URL.createObjectURL(blob);
+
+        console.log("Received file:", url);
+
+        setFiles(prevFiles => [...prevFiles, {type: "received", url: url, name: metadata.fileName}]);
+    }
     
+    // Sends a file in chunks, along with its metadata
+    function sendFile(file) {
+        const fileMetadata = {
+        type: "file-metadata",
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+        };
+        dataChannel.current.send(JSON.stringify(fileMetadata));
+        sendFileChunks(file);
+    }
+    
+    // Sends file in chunks over data channel
+    function sendFileChunks(file) {
+        let offset = 0;
+    
+        const reader = new FileReader();
+        reader.onload = () => {
+        const chunk = reader.result;
+        dataChannel.current.send(chunk);
+    
+        offset += CHUNK_SIZE.current;
+        if (offset < file.size) {
+            readSlice(offset);
+        } else {
+            dataChannel.current.send(JSON.stringify({ type: "file-complete" }));
+        }
+        };
+    
+        const readSlice = (o) => {
+        const slice = file.slice(offset, o + CHUNK_SIZE.current);
+        reader.readAsArrayBuffer(slice);
+        };
+    
+        readSlice(0);
+    }
 
 
     // Function to generate a 6-character pronounceabletunnelCode 
@@ -251,31 +308,68 @@ export default function Tunnel() {
         return tunnelCode;
     }
 
-    // Handle file input change event
+    // Handle file upload
     const handleFileInputChange = (event) => {
-        console.log("Uploaded file:", event.target.files[0]);
-        const newFiles = Array.from(event.target.files);
+        console.log("Uploaded files:", event.target.files);
+        for(let i = 0; i < event.target.files.length; i++) {
+            sendFile(event.target.files[i]);
+        }
+        // Convert FileList to an array and transform each file to the desired structure
+        const newFiles = Array.from(event.target.files).map(file => ({
+            type: "uploaded",
+            name: file.name,
+            // url: URL.createObjectURL(file) // Generate URL for each file
+        }));
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     };
 
+      // Function to simulate file download
+    const downloadFile = (url, name) => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
+    const fileInputRef = useRef(null);
+
+    const handleClickUploadBox = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
 
     return (
         <div className="container">
         <div className="upload-box">
             <h1>Upload Files</h1>
-            <div className="tunnelCode-display">{tunnelCode}</div>
+            <div className="code-display">{tunnelCode}</div>
             <div className="file-input-container">
-            <label htmlFor="fileInput" className="file-input-label">Choose Files</label>
-            <input type="file" id="fileInput" multiple onChange={handleFileInputChange} />
+            <input type="file" id="fileInput" ref={fileInputRef} style={{display: 'none'}} multiple onChange={handleFileInputChange} />
             </div>
         </div>
-        <div className="file-list-box">
-            <h1>Files</h1>
-            <ul id="fileList">
+        <div className="file-list-box" >
+
+            <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}> 
+                <h1 style={{marginRight: "20px"}}>Files</h1>
+                <label htmlFor="fileInput" className="file-input-label">Choose Files</label>
+            </div>
+
+            <ul id="fileList" onClick={handleClickUploadBox}>
             {files.map((file, index) => (
                 <li key={index}>
-                {file.name}
+                {/* {file.type} */}
+                {file.type === "received" ? (
+                    <div className="received-file" onClick={() => downloadFile(file.url, file.name)} style={{cursor: "pointer"}}>
+                        {file.name} <span role="img" aria-label="received"><img className="download-icon" src={downloadImage}/></span>
+                    </div> 
+                    ) : (
+                    <div className="uploaded-file">
+                        {file.name} 
+                    </div>
+                )}
                 {/* <img src="download-icon.svg" alt="Download" className="download-icon" /> */}
                 </li>
             ))}
