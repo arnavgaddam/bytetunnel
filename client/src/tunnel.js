@@ -16,6 +16,10 @@ const urlParams = new URLSearchParams(window.location.search);
 const tunnel_code = urlParams.get('code');
 const client_id = generateRandomCode(5);
 
+const fileInput = document.getElementById('fileInput');
+const fileList = document.getElementById('fileList');
+const placeholder = document.getElementById('placeholder');
+
 const config = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
 };
@@ -102,19 +106,42 @@ function saveFile(buffers, metadata) {
   if (metadata == null) {
     return;
   }
+
   const blob = new Blob(buffers, { type: metadata.fileType });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = metadata.fileName;
-  a.innerHTML = "CLICK ME";
-  document.body.appendChild(a);
-  // a.click();
-  // setTimeout(() => {
-  //   document.body.removeChild(a);
-  //   URL.revokeObjectURL(url);
-  // }, 100);
+
+  // Create a list item to display the file in the file list
+  const li = document.createElement('li');
+
+  const fileNameSpan = document.createElement('span');
+  fileNameSpan.textContent = metadata.fileName;
+
+  // const downloadIcon = document.createElement('span');
+  // downloadIcon.classList.add('download-icon');
+  // downloadIcon.innerHTML = '&#x1F4BE;'; // Download icon
+
+  const downloadIcon = document.createElement('img');
+  downloadIcon.classList.add('download-icon');
+  downloadIcon.src = "public/download_icon.svg";
+  downloadIcon.alt = 'Download';
+
+  li.appendChild(fileNameSpan);
+  li.appendChild(downloadIcon);
+  li.style.cursor = "pointer";
+
+  // Add click event to the list item to download the file
+  li.addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = metadata.fileName;
+    a.click();
+  });
+
+  // Append the list item to the file list
+  const fileList = document.getElementById('fileList');
+  fileList.appendChild(li);
 }
+
 
 function initDataChannel() {
   dataChannel.onopen = dataChannelOpen;
@@ -256,9 +283,6 @@ function updateHost(count) {
 
 // File uploading logic 
 
-const fileInput = document.getElementById('fileInput');
-const fileList = document.getElementById('fileList');
-const placeholder = document.getElementById('placeholder');
 
 // Flushes files from filelist to peer
 function flushFiles() {
@@ -314,8 +338,7 @@ function sendFileChunks(file) {
 fileInput.addEventListener('change', () => {
   const files = fileInput.files;
   if (files.length > 0) {
-    placeholder.style.display = 'none';
-    fileList.innerHTML = ''; // Clear the list
+    // fileList.innerHTML = ''; // Clear the list
     for (const file of files) {
       displayFile(file.name);
       // If channel is open, send the file
