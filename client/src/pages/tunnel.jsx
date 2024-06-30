@@ -6,6 +6,7 @@ import downloadImage from '../assets/download_icon.svg';
 export default function Tunnel() {
     // Keep track of files and current client ID
     const [files, setFiles] = useState([]);
+    const filesRef = useRef([]);
     const [clientId, setClientId] = useState(generateCode());
 
     // Declare Refs for WebRTC logic
@@ -26,10 +27,6 @@ export default function Tunnel() {
         websocket.current.onopen = initSocket;
     }, []);
 
-    // Triggers when new files are added
-    useEffect(() => {
-        // console.log(files);
-    }, [files]);
 
     // Initializes websocket by registering with server
     function initSocket() {
@@ -205,7 +202,15 @@ export default function Tunnel() {
     // Called when data channel opens
     function dataChannelOpen() {
         console.log("Data channel opened.");
+        console.log("Number of files to send:", filesRef.current.length);
         // Flush files
+        for (let i = 0; i < filesRef.current.length; i++) {
+            console.log(filesRef.current[i]);
+            if (filesRef.current[i].type == "uploaded") {
+                console.log("Sending file:", filesRef.current[i].file);
+                sendFile(filesRef.current[i].file);
+            }
+        }
     }
 
     const receivedBuffersRef = useRef([]);
@@ -216,29 +221,32 @@ export default function Tunnel() {
     function handleChannelMessage(event) {
         console.log("Received message:", event.data);
         if (typeof event.data === 'string') {
-        // Contains metadata
-        const message = JSON.parse(event.data);
-        console.log("metadata received", message);
-        if (message.type === 'file-metadata') {
-            receivedMetadataRef.current = message;
-            receivedBuffersRef.current = [];
-            receivedSizeRef.current = 0;
-        } else if (message.type === 'file-complete') {
-            saveFile(receivedBuffersRef.current, receivedMetadataRef.current);
-            receivedMetadataRef.current = null;
-            receivedBuffersRef.current = [];
-            receivedSizeRef.current = 0;
-        }
+            // Contains metadata
+            const message = JSON.parse(event.data);
+            console.log("metadata received", message);
+            if (message.type === 'file-metadata') {
+                receivedMetadataRef.current = message;
+                receivedBuffersRef.current = [];
+                receivedSizeRef.current = 0;
+            } else if (message.type === 'file-complete') {
+                saveFile(receivedBuffersRef.current, receivedMetadataRef.current);
+                receivedMetadataRef.current = null;
+                receivedBuffersRef.current = [];
+                receivedSizeRef.current = 0;
+            }
         } else {
-        // Handle chunks of array buffers
-        receivedBuffersRef.current.push(event.data);
-        receivedSizeRef.current += event.data.byteLength;
-        if (receivedSizeRef.current >= receivedMetadataRef.current.fileSize) {
-            saveFile(receivedBuffersRef.current, receivedMetadataRef.current);
-            receivedMetadataRef.current = null;
-            receivedBuffersRef.current = [];
-            receivedSizeRef.current = 0;
-        }
+            if (!receivedMetadataRef.current) {
+                return;
+            }
+            // Handle chunks of array buffers
+            receivedBuffersRef.current.push(event.data);
+            receivedSizeRef.current += event.data.byteLength;
+            if (receivedSizeRef.current >= receivedMetadataRef.current.fileSize) {
+                saveFile(receivedBuffersRef.current, receivedMetadataRef.current);
+                receivedMetadataRef.current = null;
+                receivedBuffersRef.current = [];
+                receivedSizeRef.current = 0;
+            }
         }
     }
 
@@ -252,8 +260,6 @@ export default function Tunnel() {
 
         const blob = new Blob(buffers, { type: metadata.fileType });
         const url = URL.createObjectURL(blob);
-
-        console.log("Received file:", url);
 
         setFiles(prevFiles => [...prevFiles, {type: "received", url: url, name: metadata.fileName}]);
     }
@@ -312,14 +318,22 @@ export default function Tunnel() {
     const handleFileInputChange = (event) => {
         console.log("Uploaded files:", event.target.files);
         for(let i = 0; i < event.target.files.length; i++) {
-            sendFile(event.target.files[i]);
+            if (dataChannel.current) {
+                sendFile(event.target.files[i]);
+            }
         }
         // Convert FileList to an array and transform each file to the desired structure
         const newFiles = Array.from(event.target.files).map(file => ({
             type: "uploaded",
             name: file.name,
+            file: file
             // url: URL.createObjectURL(file) // Generate URL for each file
         }));
+
+        // Update filesRef (immediately) and queue update on files for UI
+        for (let i = 0; i < newFiles.length; i++) {
+            filesRef.current.push(newFiles[i]);
+        }
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     };
 
@@ -370,7 +384,6 @@ export default function Tunnel() {
                         {file.name} 
                     </div>
                 )}
-                {/* <img src="download-icon.svg" alt="Download" className="download-icon" /> */}
                 </li>
             ))}
             </ul>
