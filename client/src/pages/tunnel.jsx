@@ -199,18 +199,17 @@ export default function Tunnel() {
         dataChannel.current.onmessage = handleChannelMessage;
     }
 
+    const fileQueue = useRef([]);
+
     // Called when data channel opens
     function dataChannelOpen() {
         console.log("Data channel opened.");
         console.log("Number of files to send:", filesRef.current.length);
-        // Flush files
+        // Add files to queue and start send on first file
         for (let i = 0; i < filesRef.current.length; i++) {
-            console.log(filesRef.current[i]);
-            if (filesRef.current[i].type == "uploaded") {
-                console.log("Sending file:", filesRef.current[i].file);
-                sendFile(filesRef.current[i].file);
-            }
+            fileQueue.current.push(filesRef.current[i]);
         }
+        sendFile();
     }
 
     const receivedBuffersRef = useRef([]);
@@ -263,9 +262,17 @@ export default function Tunnel() {
 
         setFiles(prevFiles => [...prevFiles, {type: "received", url: url, name: metadata.fileName}]);
     }
+
+    // Send a file from queue
+    function sendFile() {
+        if (fileQueue.current.length > 0) {
+            const file = fileQueue.current[0].file;
+            sendMetadata(file);
+        }
+    }
     
     // Sends a file in chunks, along with its metadata
-    function sendFile(file) {
+    function sendMetadata(file) {
         const fileMetadata = {
         type: "file-metadata",
         fileName: file.name,
@@ -290,6 +297,8 @@ export default function Tunnel() {
             readSlice(offset);
         } else {
             dataChannel.current.send(JSON.stringify({ type: "file-complete" }));
+            fileQueue.current.shift();
+            sendFile();
         }
         };
     
@@ -319,7 +328,7 @@ export default function Tunnel() {
         console.log("Uploaded files:", event.target.files);
         for(let i = 0; i < event.target.files.length; i++) {
             if (dataChannel.current) {
-                sendFile(event.target.files[i]);
+                sendMetadata(event.target.files[i]);
             }
         }
         // Convert FileList to an array and transform each file to the desired structure
@@ -371,7 +380,7 @@ export default function Tunnel() {
                 <label htmlFor="fileInput" className="file-input-label">Choose Files</label>
             </div>
 
-            <ul id="fileList" onClick={handleClickUploadBox}>
+            <ul id="fileList">
             {files.map((file, index) => (
                 <li key={index}>
                 {/* {file.type} */}

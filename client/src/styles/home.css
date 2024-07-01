@@ -1,6 +1,15 @@
 /* Home.css */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
+.App {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; /* Ensure full width */
+  }
+  
+
 body {
   font-family: 'Roboto', sans-serif;
   display: flex;
@@ -23,22 +32,34 @@ body {
 }
 
 .panel {
-  flex: 1;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.1);
-  margin: 0 10px;
-  text-align: center;
-}
+    background: rgba(255, 255, 255, 0.15);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    margin: 20px;
+    flex: 1;
+    backdrop-filter: blur(10px);
+  }
+  
+  .left-panel {
+    flex: 1;
+  }
+  
+  .right-panel {
+    flex: 2; /* Makes the right panel wider */
+  }
 
-.left-panel {
-  margin-right: 5px;
-}
-
-.right-panel {
-  margin-left: 5px;
-}
+#joinCodeInput {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    box-sizing: border-box;
+    text-align: center;
+  }
 
 h1 {
   font-size: 2.5em;
