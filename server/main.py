@@ -1,4 +1,5 @@
 import asyncio
+import os
 import websockets
 import json
 
@@ -116,9 +117,17 @@ async def handle_connection(websocket: websockets.WebSocketClientProtocol, path)
 
 async def main():
     print("Starting signaling server...")
-    server = await websockets.serve(handle_connection, 'localhost', 8765)
-    print("Signaling server started on ws://localhost:8765")
-    await server.wait_closed()
+    loop = asyncio.get_running_loop()
+    stop = loop.create_future()
+    port = int(os.environ.get("PORT", "8001"))
+
+    async with websockets.serve(handle_connection, "", port):
+        await stop
+
+
+    # server = await websockets.serve(handle_connection, 'localhost', 8765)
+    # print("Signaling server started on ws://localhost:8765")
+    # await server.wait_closed()
 
 if __name__ == "__main__":
     asyncio.run(main())
