@@ -13,7 +13,8 @@ export default function Tunnel() {
     const host = useRef(false);
     const connection = useRef(null);
     const dataChannel = useRef(null);
-    const websocket = useRef(new WebSocket("ws://localhost:8765"));
+    // const websocket = useRef(new WebSocket("ws://localhost:8765"));
+    const websocket = useRef(new WebSocket("https://bytetunnel.onrender.com/"));
     const CHUNK_SIZE = useRef(16000);
 
     const config = {
