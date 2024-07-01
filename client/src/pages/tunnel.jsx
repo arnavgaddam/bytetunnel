@@ -380,7 +380,7 @@ export default function Tunnel() {
                 <label htmlFor="fileInput" className="file-input-label">Choose Files</label>
             </div>
 
-            <ul id="fileList" onClick={handleClickUploadBox}>
+            <ul id="fileList">
             {files.map((file, index) => (
                 <li key={index}>
                 {/* {file.type} */}
