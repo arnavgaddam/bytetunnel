@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../styles/tunnel.css';
 import { useParams } from 'react-router-dom';
 import downloadImage from '../assets/download_icon.svg';
+import { useNavigate } from 'react-router-dom';
 
 export default function Tunnel() {
+    const navigate = useNavigate();
     // Keep track of files and current client ID
     const [files, setFiles] = useState([]);
     const filesRef = useRef([]);
@@ -217,6 +219,9 @@ export default function Tunnel() {
     const receivedMetadataRef = useRef(null);
     const receivedSizeRef = useRef(0);
 
+    // Keeps track of time for performance logging
+    const startTime = useRef(null);
+    const fileSize = useRef(null);
     // Function to handle received messages over data channel
     function handleChannelMessage(event) {
         console.log("Received message:", event.data);
@@ -228,11 +233,14 @@ export default function Tunnel() {
                 receivedMetadataRef.current = message;
                 receivedBuffersRef.current = [];
                 receivedSizeRef.current = 0;
+                startTime.current = performance.now();
+                fileSize.current = message.fileSize;
             } else if (message.type === 'file-complete') {
                 saveFile(receivedBuffersRef.current, receivedMetadataRef.current);
                 receivedMetadataRef.current = null;
                 receivedBuffersRef.current = [];
                 receivedSizeRef.current = 0;
+                console.log((performance.now()-startTime.current));
             }
         } else {
             if (!receivedMetadataRef.current) {
@@ -366,38 +374,41 @@ export default function Tunnel() {
     };
 
     return (
-        <div className="container">
-        <div className="upload-box">
-            <h1>Upload Files</h1>
-            <div className="code-display">{tunnelCode}</div>
-            <div className="file-input-container">
-            <input type="file" id="fileInput" ref={fileInputRef} style={{display: 'none'}} multiple onChange={handleFileInputChange} />
+        <div className="app">
+            <div className="logo-container">
+                <img src="/logo-no-background.svg" alt="Logo" className="logo" onClick={() => {navigate("/")}}/>
             </div>
-        </div>
-        <div className="file-list-box" >
-
-            <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}> 
-                <h1 style={{marginRight: "20px"}}>Files</h1>
-                <label htmlFor="fileInput" className="file-input-label">Choose Files</label>
-            </div>
-
-            <ul id="fileList">
-            {files.map((file, index) => (
-                <li key={index}>
-                {/* {file.type} */}
-                {file.type === "received" ? (
-                    <div className="received-file" onClick={() => downloadFile(file.url, file.name)} style={{cursor: "pointer"}}>
-                        {file.name} <span role="img" aria-label="received"><img className="download-icon" src={downloadImage}/></span>
-                    </div> 
-                    ) : (
-                    <div className="uploaded-file">
-                        {file.name} 
+            <div className="container">
+                <div className="upload-box">
+                    <h1>Upload Files</h1>
+                    <div className="code-display">{tunnelCode}</div>
+                    <div className="file-input-container">
+                        <input type="file" id="fileInput" ref={fileInputRef} style={{ display: 'none' }} multiple onChange={handleFileInputChange} />
                     </div>
-                )}
-                </li>
-            ))}
-            </ul>
-        </div>
+                </div>
+                <div className="file-list-box">
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <h1 style={{ marginRight: "20px" }}>Files</h1>
+                        <label htmlFor="fileInput" className="file-input-label">Choose Files</label>
+                    </div>
+                    <ul id="fileList">
+                        {files.map((file, index) => (
+                            <li key={index}>
+                                {file.type === "received" ? (
+                                    <div className="received-file" onClick={() => downloadFile(file.url, file.name)} style={{ cursor: "pointer" }}>
+                                        {file.name} <span role="img" aria-label="received"><img className="download-icon" src={downloadImage} /></span>
+                                    </div>
+                                ) : (
+                                    <div className="uploaded-file">
+                                        {file.name}
+                                    </div>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
         </div>
     );
+    
 }

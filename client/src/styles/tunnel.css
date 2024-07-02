@@ -3,7 +3,7 @@
 body {
   font-family: 'Roboto', sans-serif;
   display: flex;
-  height: 100vh;
+  min-height: 100vh; /* Ensure full viewport height */
   margin: 0;
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
@@ -13,13 +13,40 @@ body {
   box-sizing: border-box;
 }
 
+.App {
+  text-align: center;
+}
+
 .container {
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+  justify-content: space-around; /* Center items horizontally */
   width: 100%;
   max-width: 1200px;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  margin: 20px;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-container {
+  margin-top: 20px;
+  margin-left: auto; /* Adjust as needed */
+  margin-right: auto;
+  max-width: 500px;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.logo {
+  width: auto; /* Adjust size as needed */
+  height: auto; /* Maintain aspect ratio */
 }
 
 .upload-box, .file-list-box {
@@ -29,9 +56,10 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   text-align: center;
   margin: 20px;
-  flex: 1 1 100%; /* Adjust for full width on smaller screens */
+  flex: 1 1 100%; /* Take full width initially, adjust in media queries */
+  min-width: 250px; /* Minimum width */
+  max-width: 400px; /* Maximum width */
   backdrop-filter: blur(10px);
-  min-width: 250px; /* Ensuring a minimum width */
 }
 
 h1 {
@@ -118,14 +146,15 @@ h1 {
   color: white;
   padding: 12px 25px;
   font-size: 1em;
+  margin-top: 20px;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 20px;
   transition: background 0.3s ease, transform 0.3s ease;
 }
 
 .file-input-label:hover {
   background: #45a049;
-  transform: scale(1.2);
+  transform: scale(1.05);
 }
 
 .file-input-label:active {

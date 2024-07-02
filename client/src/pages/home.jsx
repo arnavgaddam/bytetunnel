@@ -1,26 +1,25 @@
-import React, { useState } from 'react'
-import "../styles/home.css"
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import "../styles/home.css";
 
-export default function Home() {
-
+const Home = () => {
     const navigate = useNavigate();
     const [joinCode, setJoinCode] = useState("");
 
-    // Function to generate a 6-character pronounceabletunnelCode 
-    function generateCode() {
+    // Function to generate a 6-character pronounceable tunnel code 
+    const generateCode = () => {
         const consonants = 'bcdfghjklmnpqrstvwxyz';
         const vowels = 'aeiou';
         let tunnelCode = '';
         for (let i = 0; i < 3; i++) {
-        tunnelCode += consonants.charAt(Math.floor(Math.random() * consonants.length));
-        tunnelCode += vowels.charAt(Math.floor(Math.random() * vowels.length));
+            tunnelCode += consonants.charAt(Math.floor(Math.random() * consonants.length));
+            tunnelCode += vowels.charAt(Math.floor(Math.random() * vowels.length));
         }
         return tunnelCode;
     }
 
     const createTunnel = () => {
-        navigate("/tunnel/"+generateCode());
+        navigate("/tunnel/" + generateCode());
     }
 
     const joinTunnel = () => {
@@ -33,12 +32,19 @@ export default function Home() {
 
     return (
         <div className="App">
-          <h1>Bytetunnel</h1>
-          <div className="content">
-            <div className="panel left-panel">
-              <button id="createTunnel" onClick={createTunnel}>Create Tunnel</button>
-            </div>
-            <div className="panel right-panel">
+            <header className="header">
+                <div className="logo-container">
+                    <img src="/logo-no-background.svg" alt="ByteTunnel Logo" className="logo" />
+                </div>
+                <p>Secure and easy file transfer using WebRTC.</p>
+            </header>
+            <div className="content">
+                <section className="panel left-panel">
+                    <h2>Create a Tunnel</h2>
+                    <button id="createTunnel" onClick={createTunnel}>Create Tunnel</button>
+                </section>
+                <section className="panel right-panel">
+                    <h2>Join a Tunnel</h2>
                     <input
                         type="text"
                         id="joinCodeInput"
@@ -48,8 +54,10 @@ export default function Home() {
                         placeholder="Enter 6-character code"
                     />
                     <button id="joinButton" onClick={joinTunnel}>Join</button>
+                </section>
             </div>
-          </div>
         </div>
-      );
+    );
 }
+
+export default Home;
