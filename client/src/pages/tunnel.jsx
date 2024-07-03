@@ -380,7 +380,7 @@ export default function Tunnel() {
             </div>
             <div className="container">
                 <div className="upload-box">
-                    <h1>Upload Files</h1>
+                    <h1>Tunnel Code</h1>
                     <div className="code-display">{tunnelCode}</div>
                     <div className="file-input-container">
                         <input type="file" id="fileInput" ref={fileInputRef} style={{ display: 'none' }} multiple onChange={handleFileInputChange} />

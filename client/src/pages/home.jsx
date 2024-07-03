@@ -36,7 +36,7 @@ const Home = () => {
                 <div className="logo-container">
                     <img src="/logo-no-background.svg" alt="ByteTunnel Logo" className="logo" />
                 </div>
-                <p>Secure and easy file transfer using WebRTC.</p>
+                <p>Secure and easy peer to peer file transfer.</p>
             </header>
             <div className="content">
                 <section className="panel left-panel">
